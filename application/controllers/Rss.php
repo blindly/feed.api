@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Feed extends CI_Controller {
+class Json extends CI_Controller {
 
 	function _remap($parameter){
 		$this->index($parameter);
@@ -9,9 +9,6 @@ class Feed extends CI_Controller {
 
 	public function index($category = null)
 	{
-		$this->load->library('simplepie');
-		$this->simplepie->cache_location = "/tmp/cache";
-
 		$feeds = array();
 
 		switch ($category) {
@@ -43,7 +40,7 @@ class Feed extends CI_Controller {
 			break;
 
 		    default:
-			#array_push($feeds, 'http://mix.chimpfeedr.com/e4df6-Web-Browsers');
+			array_push($feeds, 'http://mix.chimpfeedr.com/e4df6-Web-Browsers');
 			array_push($feeds, 'http://www.marketwatch.com/rss/topstories');
 			array_push($feeds, 'https://news.ycombinator.com/rss');
 			array_push($feeds, 'http://daily.jstor.org/feed');
@@ -59,12 +56,6 @@ class Feed extends CI_Controller {
 			break;
 		}
 
-		$this->simplepie->set_feed_url( $feeds );
-		$this->simplepie->set_cache_duration (600);
-		$this->simplepie->enable_order_by_date(true);
-		#$this->simplepie->set_stupidly_fast(true);
-		$success = $this->simplepie->init();
-		
 		if ($success) {
 			
 			$item_limit = 0;
@@ -72,7 +63,7 @@ class Feed extends CI_Controller {
 			
 			foreach($this->simplepie->get_items() as $item) {
 			
-				if ($item_limit == 30) {
+				if ($item_limit == 50) {
 					break;
 				}
 
@@ -118,7 +109,7 @@ class Feed extends CI_Controller {
 				$item_limit++;
 			}
 
-			// $data_array = array_map("unserialize", array_unique(array_map("serialize", $data_array)));
+			$data_array = array_map("unserialize", array_unique(array_map("serialize", $data_array)));
 
 			$output = array( 
 				"elapsed_time" => $this->benchmark->elapsed_time(),
