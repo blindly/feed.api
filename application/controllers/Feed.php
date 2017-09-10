@@ -9,24 +9,44 @@ class Feed extends CI_Controller {
 
 	public function index($category = null)
 	{
+		date_default_timezone_set('America/New_York');
 		$this->load->library('simplepie');
 		$this->simplepie->cache_location = "/tmp/cache";
-
+		$this->simplepie->set_cache_duration (600);
+		
 		$feeds = array();
+		$feed_limit = 30;
 
 		switch ($category) {
+
+		    case "bookmarks":
+			array_push($feeds, 'https://feeds.pinboard.in/rss/secret:19c5555f9a1a1f1452ef/u:blindly/t:home/');
+			$this->simplepie->set_cache_duration (0);
+		
+			break;
+
 		    case "browsers":
 			array_push($feeds, 'http://mix.chimpfeedr.com/e4df6-Web-Browsers');
+			$feed_limit = 30;
 
    			break;
+
+                    case "enterprise":
+                        array_push($feeds, 'http://www.bing.com/news/search?q=Dell+EMC&qs=n&form=QBNT&pq=dell+emc&sc=8-7&sp=-1&sk=&format=rss');
+                        array_push($feeds, 'http://www.bing.com/news/search?q=vmware&qs=n&form=QBNT&pq=dell+emc&sc=8-7&sp=-1&sk=&format=rss');
+                        array_push($feeds, 'http://feeds.feedburner.com/planetpuppet');
+                        $feed_limit = 15;
+
+                        break;
 
                     case "startup":
 
                         array_push($feeds, "https://www.producthunt.com/feed.atom");
                         array_push($feeds, "https://news.ycombinator.com/rss");
                         array_push($feeds, "https://www.designernews.co/?format=rss");
-                        # array_push($feeds, );
+                        array_push($feeds, "https://lobste.rs/rss");
 
+			$feed_limit = 50;
                         break;
 
 		    case "gaming":
@@ -34,8 +54,10 @@ class Feed extends CI_Controller {
 			array_push($feeds, "http://feeds.ign.com/ign/pc-all");
 			array_push($feeds, "http://www.engadget.com/tag/@gaming/rss.xml");
 			array_push($feeds, "http://rss.escapistmagazine.com/videos/list/1.xml");
-			# array_push($feeds, );
+			array_push($feeds, "http://www.pcgamer.com/rss/");
+			array_push($feeds, "http://store.steampowered.com/feeds/news.xml");
 
+			$feed_limit = 50;
 			break;
 
 		    case "life":
@@ -50,6 +72,11 @@ class Feed extends CI_Controller {
 
 			break;
 
+		    case "weather":
+			array_push($feeds, "https://www.yahoo.com/news/rss/weather");
+
+			break;
+
 		    default:
 			array_push($feeds, 'http://mix.chimpfeedr.com/e4df6-Web-Browsers');
 			array_push($feeds, 'http://www.marketwatch.com/rss/topstories');
@@ -61,13 +88,14 @@ class Feed extends CI_Controller {
 			array_push($feeds, 'http://feeds.bbci.co.uk/news/world/rss.xml');
 			array_push($feeds, 'http://www.newsblur.com/social/rss/32048/popular');
 			
+			$feed_limit = 50;
 			break;
 		}
 
 		$this->simplepie->set_feed_url( $feeds );
-		$this->simplepie->set_cache_duration (600);
+		//$this->simplepie->set_cache_duration (600);
 		$this->simplepie->enable_order_by_date(true);
-		#$this->simplepie->set_stupidly_fast(true);
+		$this->simplepie->set_stupidly_fast(true);
 		$success = $this->simplepie->init();
 		
 		if ($success) {
@@ -77,7 +105,7 @@ class Feed extends CI_Controller {
 			
 			foreach($this->simplepie->get_items() as $item) {
 			
-				if ($item_limit == 30) {
+				if ($item_limit == $feed_limit) {
 					break;
 				}
 
@@ -110,18 +138,30 @@ class Feed extends CI_Controller {
 				arsort($analysis);
 				*/
 
+				$banned_domains = [
+					'docplayer.net',
+					'fitnhit.com',
+					'dottech.org',
+				];
+
+				$banned = in_array($domain, $banned_domains);
+
 				$data = array(
 					'title' 	=> $item->get_title(),
-					'link' 		=> "//www.instapaper.com/text?u=$link",
+					//'link' 		=> "//www.instapaper.com/text?u=$link",
+					'link' 		=> $link,
 					'date' 		=> $item->get_date(DATE_RFC2822),
 					'domain' 	=> $domain,
+					'banned'   	=> $banned,
 					'favicon' 	=> "//www.google.com/s2/favicons?domain=$domain",
 					'description' 	=> $description,
 				//	'analysis' 	=> $analysis,
 				);
 				
-				array_push($data_array, $data);
-				$item_limit++;
+				if ( ! $banned ) {
+					array_push($data_array, $data);
+					$item_limit++;
+				}
 			}
 
 			// $data_array = array_map("unserialize", array_unique(array_map("serialize", $data_array)));

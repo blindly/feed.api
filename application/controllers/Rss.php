@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Json extends CI_Controller {
+class Rss extends CI_Controller {
 
 	function _remap($parameter){
 		$this->index($parameter);
