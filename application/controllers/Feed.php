@@ -13,6 +13,7 @@ class Feed extends CI_Controller {
 		$this->load->library('simplepie');
 		$this->simplepie->cache_location = "/tmp/cache";
 		$this->simplepie->set_cache_duration (600);
+		#$this->simplepie->set_cache_duration (0);
 		
 		$feeds = array();
 		$feed_limit = 30;
@@ -72,6 +73,11 @@ class Feed extends CI_Controller {
 
 			break;
 
+		    case "cnn":
+			array_push($feeds, "http://rss.cnn.com/rss/cnn_topstories.rss");
+
+			break;
+
 		    case "weather":
 			array_push($feeds, "https://www.yahoo.com/news/rss/weather");
 
@@ -126,9 +132,14 @@ class Feed extends CI_Controller {
 
 				$description = $item->get_description();
 				$description = strip_tags( $description );
+				$description = html_entity_decode($description, ENT_QUOTES | ENT_HTML5);
 				$description = trim(preg_replace('/\s\s+/', ' ', $description));
 				$description = htmlspecialchars_decode( $description );
 				$description = preg_replace("/&#?[a-z0-9]+;/i","",$description);
+
+				$description = str_replace("&#39;", "'", $description);
+				$description = str_replace('&apos;', "'", $description);
+
 
 				/*
 				$stopwords = array('the', 'of', 'to', 'and', 'a', 'on', 'if', 'is', 'from', 'me', 'it', 'or', 'you', 'with', 'an', 'my', 'also', 'her', 'his', 'has', 'in', 'The', 'as');
