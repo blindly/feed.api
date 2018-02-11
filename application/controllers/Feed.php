@@ -20,10 +20,30 @@ class Feed extends CI_Controller {
 
 		switch ($category) {
 
+
+                    case "crypto":
+                        // array_push($feeds, 'https://www.coindesk.com/feed/');
+                        array_push($feeds, 'https://cointelegraph.com/rss');
+                        array_push($feeds, 'https://cryptocurrencynews.com/feed/');
+                        array_push($feeds, 'http://www.bing.com/news/search?q=crypto+currency&qs=n&form=QBNT&sc=8-7&sp=-1&sk=&format=rss');
+                        array_push($feeds, 'http://www.bing.com/news/search?q=etherium&qs=n&form=QBNT&sc=8-7&sp=-1&sk=&format=rss');
+
+                        $feed_limit = 45;
+
+                        break;
+
 		    case "bookmarks":
 			array_push($feeds, 'https://feeds.pinboard.in/rss/secret:19c5555f9a1a1f1452ef/u:blindly/t:home/');
 			$this->simplepie->set_cache_duration (0);
 		
+			break;
+
+		    case "programming":
+                        array_push($feeds, 'https://blogs.msdn.microsoft.com/webdev/feed/');
+                        array_push($feeds, 'https://blogs.technet.microsoft.com/cloudplatform/rssfeeds/devblogs?tags=announcement');
+                        array_push($feeds, 'https://thenewstack.io/blog/feed/');
+                        $feed_limit = 30;
+
 			break;
 
 		    case "browsers":
@@ -35,19 +55,22 @@ class Feed extends CI_Controller {
                     case "enterprise":
                         array_push($feeds, 'http://www.bing.com/news/search?q=Dell+EMC&qs=n&form=QBNT&pq=dell+emc&sc=8-7&sp=-1&sk=&format=rss');
                         array_push($feeds, 'http://www.bing.com/news/search?q=vmware&qs=n&form=QBNT&pq=dell+emc&sc=8-7&sp=-1&sk=&format=rss');
+                        array_push($feeds, 'http://www.bing.com/news/search?q=servicenow&qs=n&form=QBNT&pq=dell+emc&sc=8-7&sp=-1&sk=&format=rss');
                         array_push($feeds, 'http://feeds.feedburner.com/planetpuppet');
+                        array_push($feeds, 'https://servicematters.servicenow.com/feed');
+			
                         $feed_limit = 15;
 
                         break;
 
                     case "startup":
 
-                        array_push($feeds, "https://www.producthunt.com/feed.atom");
+                        array_push($feeds, "https://www.producthunt.com/feed");
                         array_push($feeds, "https://news.ycombinator.com/rss");
                         array_push($feeds, "https://www.designernews.co/?format=rss");
                         array_push($feeds, "https://lobste.rs/rss");
 
-			$feed_limit = 50;
+			$feed_limit = 60;
                         break;
 
 		    case "gaming":
@@ -99,7 +122,7 @@ class Feed extends CI_Controller {
 		}
 
 		$this->simplepie->set_feed_url( $feeds );
-		//$this->simplepie->set_cache_duration (600);
+		$this->simplepie->set_cache_duration (600);
 		$this->simplepie->enable_order_by_date(true);
 		$this->simplepie->set_stupidly_fast(true);
 		$success = $this->simplepie->init();
