@@ -9,6 +9,7 @@ class Feed extends CI_Controller {
 
 	public function index($category = null)
 	{
+		$debug = $this->input->get('debug');
 		date_default_timezone_set('America/New_York');
 		$this->load->library('simplepie');
 		$this->simplepie->cache_location = "/tmp/cache";
@@ -19,6 +20,13 @@ class Feed extends CI_Controller {
 		$feed_limit = 30;
 
 		switch ($category) {
+
+		    case "comic":
+                        array_push($feeds, 'https://xkcd.com/rss.xml');
+                        array_push($feeds, 'http://comicfeeds.chrisbenard.net/view/dilbert/default');
+			$feed_limit = 10;
+
+			break;
 
 
                     case "crypto":
@@ -42,13 +50,18 @@ class Feed extends CI_Controller {
                         array_push($feeds, 'https://blogs.msdn.microsoft.com/webdev/feed/');
                         array_push($feeds, 'https://blogs.technet.microsoft.com/cloudplatform/rssfeeds/devblogs?tags=announcement');
                         array_push($feeds, 'https://thenewstack.io/blog/feed/');
+                        array_push($feeds, 'http://blog.elementary.io/rss');
                         $feed_limit = 30;
 
 			break;
 
 		    case "browsers":
-			array_push($feeds, 'http://mix.chimpfeedr.com/e4df6-Web-Browsers');
-			$feed_limit = 30;
+                        array_push($feeds, 'https://blogs.opera.com/desktop/feed/');
+                        array_push($feeds, 'https://blog.mozilla.org/feed/');
+                        array_push($feeds, 'https://vivaldi.com/blog/feed/');
+                        array_push($feeds, 'https://blog.waterfoxproject.org/rss');
+                        array_push($feeds, 'https://www.bing.com/news/search?q=web+browser&qs=n&form=QBNT&sc=8-7&sp=-1&sk=&format=rss');
+			$feed_limit = 20;
 
    			break;
 
@@ -58,8 +71,10 @@ class Feed extends CI_Controller {
                         array_push($feeds, 'http://www.bing.com/news/search?q=servicenow&qs=n&form=QBNT&pq=dell+emc&sc=8-7&sp=-1&sk=&format=rss');
                         array_push($feeds, 'http://feeds.feedburner.com/planetpuppet');
                         array_push($feeds, 'https://servicematters.servicenow.com/feed');
+                        array_push($feeds, 'https://www.ansible.com/blog/rss.xml');
+                        array_push($feeds, 'https://about.gitlab.com/atom.xml');
 			
-                        $feed_limit = 15;
+                        $feed_limit = 20;
 
                         break;
 
@@ -138,8 +153,15 @@ class Feed extends CI_Controller {
 					break;
 				}
 
+				if ( $debug ) {
+					echo "<pre>";
+					print_r($item);
+					return;
+				}
+
 				$title = $item->get_title();
 				$link = $item->get_permalink();
+				$date = $item->get_date();
 
 				/* For BING */
 				$link = str_replace('amp;', '', $link);
@@ -154,6 +176,9 @@ class Feed extends CI_Controller {
 				$domain = str_ireplace('www.', '', parse_url($link, PHP_URL_HOST));
 
 				$description = $item->get_description();
+				$title = preg_replace("/<div>(.*?)<\/div>/", "$1", $title);
+
+				/*
 				$description = strip_tags( $description );
 				$description = html_entity_decode($description, ENT_QUOTES | ENT_HTML5);
 				$description = trim(preg_replace('/\s\s+/', ' ', $description));
@@ -162,7 +187,7 @@ class Feed extends CI_Controller {
 
 				$description = str_replace("&#39;", "'", $description);
 				$description = str_replace('&apos;', "'", $description);
-
+				*/
 
 				/*
 				$stopwords = array('the', 'of', 'to', 'and', 'a', 'on', 'if', 'is', 'from', 'me', 'it', 'or', 'you', 'with', 'an', 'my', 'also', 'her', 'his', 'has', 'in', 'The', 'as');
@@ -176,13 +201,13 @@ class Feed extends CI_Controller {
 					'docplayer.net',
 					'fitnhit.com',
 					'dottech.org',
+					'download.cnet.com',
 				];
 
 				$banned = in_array($domain, $banned_domains);
 
 				$data = array(
-					'title' 	=> $item->get_title(),
-					//'link' 		=> "//www.instapaper.com/text?u=$link",
+					'title' 	=> $title,
 					'link' 		=> $link,
 					'date' 		=> $item->get_date(DATE_RFC2822),
 					'domain' 	=> $domain,

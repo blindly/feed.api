@@ -13,7 +13,10 @@ class Rss extends CI_Controller {
 
 		switch ($category) {
 		    case "browsers":
-			array_push($feeds, 'http://mix.chimpfeedr.com/e4df6-Web-Browsers');
+			//array_push($feeds, 'http://mix.chimpfeedr.com/e4df6-Web-Browsers');
+			array_push($feeds, 'https://blogs.opera.com/desktop/feed/');
+			array_push($feeds, 'https://blog.mozilla.org/feed/');
+			array_push($feeds, 'https://vivaldi.com/blog/feed/');
 
    			break;
 

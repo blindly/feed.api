@@ -1,27 +1,23 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Bookmarks extends CI_Controller {
+class Jokes extends CI_Controller {
 
 	public function index()
 	{
-		$this->load->database('bookmarks');
+		$this->load->database('jokes');
 
 		$ip = hash("ripemd160", $this->input->ip_address() );
 
-		$this->db->order_by('timestamp', 'DESC');
+		$this->db->order_by('timestamp');
 		$this->db->where('ip', $ip);
-		$query = $this->db->get('bookmarks');
+		$query = $this->db->get('jokes');
 		$data_array = array();
 		foreach ($query->result() as $row)
 		{
-                        $domain = str_ireplace('www.', '', parse_url($row->url, PHP_URL_HOST));
-			
 			$data = array(
-				'url'           => $row->url,
-				'domain'        => $domain,
-				'title'         => $row->title,
-				'favicon'       => "//www.google.com/s2/favicons?domain=$domain",
+				'text'          => $row->text,
+				'id'            => $row->id,
 			);
 
 			array_push($data_array, $data);
@@ -37,7 +33,7 @@ class Bookmarks extends CI_Controller {
                         "status" => $status,
                         "elapsed_time" => $this->benchmark->elapsed_time(),
                         "memory_usage" => $this->benchmark->memory_usage(),
-			"bookmarks" => $data_array
+			"jokes" => $data_array
                 );
 
 
@@ -54,68 +50,26 @@ class Bookmarks extends CI_Controller {
 	}
 
 
-	public function fix()
-	{
-		$this->load->database('bookmarks');
-		$query = $this->db->get('bookmarks');
-
-		foreach ($query->result() as $row)
-                {
-                        $data = array(
-                                'url'           => $row->url,
-                                'title'         => $row->title,
-                        );
-
-			if ( $row->title == "" )
-			{
-
-				$url = $row->url;
-				$doc = new DOMDocument();
-				@$doc->loadHTMLFile($url);
-				$xpath = new DOMXPath($doc);
-				$title = $xpath->query('//title')->item(0)->nodeValue."\n";
-
-				$this->db->where('url',  $url);
-				$this->db->update('bookmarks', array('title' => $title ));
-				
-				echo $this->db->affected_rows();
-				echo "<br>";
-			}
-
-                }
-
-	}
-
 	public function info()
 	{
                 $ip = hash("ripemd160", $this->input->ip_address() );
                 echo $ip;
 	}
 
-	public function url()
-	{
-		$url = $this->input->get_post('url');
-
-$doc = new DOMDocument();
-@$doc->loadHTMLFile($url);
-$xpath = new DOMXPath($doc);
-echo $xpath->query('//title')->item(0)->nodeValue."\n";
-
-	}
-
 	public function remove()
 	{
-		$this->load->database('bookmarks');
-		$url = $this->input->get_post('url');
+		$this->load->database('jokes');
+		$id = $this->input->get_post('id');
+
                 $ip = hash("ripemd160", $this->input->ip_address() );
                 $data = array(
-                        'url' => $url,
+                        'id' => $id,
                         'ip'  => $ip,
                 );
 
 		$this->db->where('ip', $ip);
-		$this->db->where('url', $url);
-		$this->db->delete('bookmarks');
+		$this->db->where('id', $id);
+		$this->db->delete('jokes');
 
                 if ( $this->db->affected_rows() > 0 )
                         $status = "ok";
@@ -143,42 +97,23 @@ echo $xpath->query('//title')->item(0)->nodeValue."\n";
 
 	public function add()
 	{
-		$this->load->database('bookmarks');
-		$url = $this->input->get_post('url');
+		$this->load->database('jokes');
+		$text = $this->input->get_post('text');
+		$id = $this->input->get_post('id');
                 $ip = hash("ripemd160", $this->input->ip_address() );
 
-		$valid = filter_var("$url", FILTER_VALIDATE_URL);
-		
-		if (! $valid)
-		{
-			$status = "not ok";	
-		}
-		else 
-		{
-
-		$doc = new DOMDocument();
-		@$doc->loadHTMLFile($url);
-		$xpath = new DOMXPath($doc);
-		# $title = $xpath->query('//title')->item(0)->nodeValue."\n";
-		$titleQuery = $xpath->query('//title')->item(0);
-		if ($titleQuery)
-			$title = $titleQuery->nodeValue."\n";
-		else
-			$title = $url;
-
 		$data = array(
-			'url' 	=> $url,
+			'id' 	=> $id,
+			'text' 	=> $text,
 			'ip'  	=> $ip,
-			'title' => $title
 		);
 
-		$this->db->insert('bookmarks', $data);
+		$this->db->insert('jokes', $data);
 
 		if ( $this->db->affected_rows() > 0 )
 			$status = "ok";
 		else
 			$status = "not ok";
-		}
 
 		$output = array(
 			"status" => $status,
@@ -193,7 +128,7 @@ echo $xpath->query('//title')->item(0)->nodeValue."\n";
 			return $this->output
 						->set_content_type('application/javascript')
                                                         ->set_status_header(200)
-                                                        ->set_header('Access-Control-Allow-Origin: https://fivecat.xyz')
+                                                        ->set_header('Access-Control-Allow-Origin: *')
                                                         ->set_output(json_encode( $output ));
                 }
 

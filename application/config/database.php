@@ -117,3 +117,69 @@ $db['bookmarks'] = array(
         'save_queries' => TRUE
 );
 
+$db['jokes'] = array(
+        'dsn'   => '',
+        'hostname' => 'localhost',
+        'username' => 'admin_jokes',
+        'password' => 'gusEZoxlNZ',
+        'database' => 'admin_jokes',
+        'dbdriver' => 'mysqli',
+        'dbprefix' => '',
+        'pconnect' => FALSE,
+        'db_debug' => (ENVIRONMENT !== 'production'),
+        'cache_on' => FALSE,
+        'cachedir' => '',
+        'char_set' => 'utf8',
+        'dbcollat' => 'utf8_general_ci',
+        'swap_pre' => '',
+        'encrypt' => FALSE,
+        'compress' => FALSE,
+        'stricton' => FALSE,
+        'failover' => array(),
+        'save_queries' => TRUE
+);
+
+
+$db['affirmations'] = array(
+        'dsn'   => '',
+        'hostname' => 'localhost',
+        'username' => 'admin_affirm',
+        'password' => 'UNnn1miVpa',
+        'database' => 'admin_affirmations',
+        'dbdriver' => 'mysqli',
+        'dbprefix' => '',
+        'pconnect' => FALSE,
+        'db_debug' => (ENVIRONMENT !== 'production'),
+        'cache_on' => FALSE,
+        'cachedir' => '',
+        'char_set' => 'utf8',
+        'dbcollat' => 'utf8_general_ci',
+        'swap_pre' => '',
+        'encrypt' => FALSE,
+        'compress' => FALSE,
+        'stricton' => FALSE,
+        'failover' => array(),
+        'save_queries' => TRUE
+);
+
+$db['languages'] = array(
+        'dsn'   => '',
+        'hostname' => 'localhost',
+        'username' => 'admin_languages',
+        'password' => '0WSyPMeGNr',
+        'database' => 'admin_languages',
+        'dbdriver' => 'mysqli',
+        'dbprefix' => '',
+        'pconnect' => FALSE,
+        'db_debug' => (ENVIRONMENT !== 'production'),
+        'cache_on' => FALSE,
+        'cachedir' => '',
+        'char_set' => 'utf8',
+        'dbcollat' => 'utf8_general_ci',
+        'swap_pre' => '',
+        'encrypt' => FALSE,
+        'compress' => FALSE,
+        'stricton' => FALSE,
+        'failover' => array(),
+        'save_queries' => TRUE
+);
