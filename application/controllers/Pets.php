@@ -14,11 +14,19 @@ class Pets extends CI_Controller {
 
 		$aww_contents = file_get_contents("https://www.reddit.com/r/aww/.json");
 
+		$feeds = array(
+			'https://www.reddit.com/r/aww/new/.json',
+			'https://www.reddit.com/r/cats/new/.json',
+			'https://www.reddit.com/r/dogpictures/new/.json',
+			'https://www.reddit.com/r/rabbits/new/.json',
+			'https://www.reddit.com/r/catpictures/new/.json',
+		);
+
 		//echo "<pre>";
 		//print_r($aww_contents);
 
-		$aww_contents_json = json_decode($aww_contents);
-		$stories = $aww_contents_json->data->children;
+		//$aww_contents_json = json_decode($aww_contents);
+		//$stories = $aww_contents_json->data->children;
 
 		//echo "<pre>";
 		//print_r($stories);
@@ -26,27 +34,36 @@ class Pets extends CI_Controller {
 		$myStories = array();
 		$count = 0;
 
-		foreach ($stories as $story) {
-			if ( $story->data->distinguished != 'moderator' ) {
+		$rand_key = array_rand($feeds, 1);
 
-				if ( $count < 2 ) {
+		$feed = $feeds[$rand_key];
 
-				$url = $story->data->preview->images[0]->source->url;
-				$title = $story->data->title;
-				$title = str_replace("Reddit","",$title);
+		//foreach ( $rand_feed as $feed ) {
 
-				$data = array(
-					'title' => $title,
-					'link' => $url,				
- 					'guid' => $url,
-				);
+			$content = file_get_contents( $feed );
+			$content_json = json_decode($content);
+			$stories = $content_json->data->children;
 
-				array_push($myStories, $data);
-				$count++;
+			foreach ($stories as $story) {
+				if ( $story->data->distinguished != 'moderator' ) {
+					if ( $count < 4 ) {
+						$url = $story->data->preview->images[0]->source->url;
+						$title = $story->data->title;
+						$title = str_replace("Reddit","",$title);
+		
+						$data = array(
+							'title' => $title,
+							'link' => $url,				
+							'guid' => $url,
+						);
+		
+						array_push($myStories, $data);
+						$count++;
+					}
 				}
 			}
-		}
-
+		//}
+		
 		//print_r($myStories);
 
 		$myFeed['feed_name'] = 'Best Pals Pets'; 
