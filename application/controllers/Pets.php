@@ -9,108 +9,56 @@ class Pets extends CI_Controller {
 
 	public function index($category = null)
 	{
-		$debug = $this->input->get('debug');
-		date_default_timezone_set('America/New_York');
-		$this->load->library('simplepie');
-		$this->simplepie->cache_location = "/tmp/cache";
-		$this->simplepie->set_cache_duration (600);
-		#$this->simplepie->set_cache_duration (0);
-		
-		$feeds = array();
-		$feed_limit = 30;
+		$this->load->helper('xml');
+		$this->load->helper('text');
 
-		switch ($category) {
+		$aww_contents = file_get_contents("https://www.reddit.com/r/aww/.json");
 
-		    case "aww":
-                        array_push($feeds, 'https://www.reddit.com/r/aww/.rss');
-			$feed_limit = 10;
+		//echo "<pre>";
+		//print_r($aww_contents);
 
-			break;
+		$aww_contents_json = json_decode($aww_contents);
+		$stories = $aww_contents_json->data->children;
 
-		    default:
-			array_push($feeds, '');
-			
-			$feed_limit = 50;
-			break;
-		}
+		//echo "<pre>";
+		//print_r($stories);
 
-		$this->simplepie->set_feed_url( $feeds );
-		$this->simplepie->set_cache_duration (600);
-		$this->simplepie->enable_order_by_date(true);
-		$this->simplepie->set_stupidly_fast(true);
-		$success = $this->simplepie->init();
-		
-		if ($success) {
-			
-			$item_limit = 0;
-			$data_array = array();
-			
-			foreach($this->simplepie->get_items() as $item) {
-			
-				if ($item_limit == $feed_limit) {
-					break;
-				}
+		$myStories = array();
+		$count = 0;
 
-				if ( $debug ) {
-					echo "<pre>";
-					print_r($item);
-					return;
-				}
+		foreach ($stories as $story) {
+			if ( $story->data->distinguished != 'moderator' ) {
 
-				$title = $item->get_title();
-				$link = $item->get_url();
-				$date = $item->get_date();
+				if ( $count < 2 ) {
 
-				/* For BING */
-				$link = str_replace('amp;', '', $link);
-				$checkUrl = parse_url($link, PHP_URL_QUERY);
-				parse_str($checkUrl, $params);
-				if ( $params ) {
-					if ( isset( $params['url'] ) ) {
-						$link = $params['url'];
-					}
-				}
-
-				$domain = str_ireplace('www.', '', parse_url($link, PHP_URL_HOST));
-
-				$description = $item->get_description();
-				$title = preg_replace("/<div>(.*?)<\/div>/", "$1", $title);
-
-                                $banned_domains = [
-                                        'docplayer.net',
-                                        'fitnhit.com',
-                                        'dottech.org',
-                                        'download.cnet.com',
-                                        'komando.com',
-                                ];
-
-                                $banned = in_array($domain, $banned_domains);
+				$url = $story->data->preview->images[0]->source->url;
+				$title = $story->data->title;
+				$title = str_replace("Reddit","",$title);
 
 				$data = array(
-					'title' 	=> $title,
-					'link' 		=> $link,
-					'date' 		=> $item->get_date(DATE_RFC2822),
-					'domain' 	=> $domain,
-					'banned'   	=> $banned,
-					'favicon' 	=> "//www.google.com/s2/favicons?domain=$domain",
-					'description' 	=> $description,
+					'title' => $title,
+					'link' => $url,				
+ 					'guid' => $url,
 				);
-				
-				if ( ! $banned ) {
-					array_push($data_array, $data);
-					$item_limit++;
+
+				array_push($myStories, $data);
+				$count++;
 				}
 			}
-
-			// $data_array = array_map("unserialize", array_unique(array_map("serialize", $data_array)));
-
-			$output = array(
-				'title' => 'Our Best Pals',
-				"stories" => $data_array
-			);
-
-			//header("Content-Type: application/rss+xml");
-			$this->load->view('rss_feed',$output);
 		}
+
+		//print_r($myStories);
+
+		$myFeed['feed_name'] = 'Best Pals Pets'; 
+		$myFeed['encoding'] = 'utf-8'; // the encoding
+		//$myFeed['feed_url'] = 'http://www.MyWebsite.com/feed'; 
+		$myFeed['page_description'] = 'Pets are our best pals'; 
+		$myFeed['page_language'] = 'en-en'; 
+		//$myFeed['creator_email'] = 'mail@me.com';
+		$myFeed['stories'] = $myStories;  
+		header("Content-Type: application/rss+xml"); 
+		 
+		$this->load->view('rss_feed', $myFeed);
 	}
 }
+
