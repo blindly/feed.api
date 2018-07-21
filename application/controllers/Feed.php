@@ -202,6 +202,7 @@ class Feed extends CI_Controller {
 					'fitnhit.com',
 					'dottech.org',
 					'download.cnet.com',
+					'komando.com',
 				];
 
 				$banned = in_array($domain, $banned_domains);
